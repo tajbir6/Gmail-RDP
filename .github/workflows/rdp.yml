@@ -24,7 +24,7 @@ jobs:
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "tajbir" -Force)
+        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "p@ssw0rd!" -Force)
 
     # Step 4: Start Playit and set up RDP tunnel
     - name: Start Playit and Set Up RDP Tunnel
