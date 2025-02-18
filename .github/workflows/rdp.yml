@@ -31,26 +31,32 @@ jobs:
     # Step 3: Clone the repository and install dependencies
     - name: Clone the repository and install dependencies
       run: |
+        echo "Cloning the repository..."
         git clone https://github.com/Tajbir23/realtime-chat-app-server.git
         cd realtime-chat-app-server
+        echo "Installing dependencies..."
         npm install
+        echo "Running build..."
         npm run build
 
     # Step 4: Start the Node.js Server and Capture Logs
     - name: Start Node.js Server
       run: |
+        echo "Starting the Node.js server..."
         npm start | Tee-Object -FilePath node_server.log
       shell: pwsh
 
     # Step 5: Display Node.js Server Logs
     - name: Display Node.js Server Logs
       run: |
+        echo "Displaying Node.js server logs..."
         Get-Content node_server.log
       shell: pwsh
 
     # Step 6: Download and Install Playit
     - name: Download and Install Playit
       run: |
+        echo "Downloading Playit..."
         $playitPath = "$env:USERPROFILE\playit.exe"
         Invoke-WebRequest -Uri "https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.exe" -OutFile $playitPath
         Start-Sleep -Seconds 5
@@ -58,6 +64,7 @@ jobs:
     # Step 7: Enable Remote Desktop features and configure user
     - name: Enable Remote Desktop
       run: |
+        echo "Enabling Remote Desktop..."
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
@@ -69,11 +76,13 @@ jobs:
       env:
         PLAYIT_AUTH_KEY: ${{ secrets.PL }}
       run: |
+        echo "Starting Playit and setting up RDP tunnel..."
         Start-Process -FilePath "$env:USERPROFILE\playit.exe" -ArgumentList "--secret $env:PLAYIT_AUTH_KEY" -NoNewWindow -Wait
 
     # Step 9: Keep the GitHub Action Runner Alive
     - name: Keep the GitHub Action Runner Alive
       run: |
+        echo "Keeping the GitHub runner alive..."
         while ($true) {
           Write-Output "Session is alive - $(Get-Date)"
           Start-Sleep -Seconds 300
@@ -85,6 +94,7 @@ jobs:
       env:
         REPO_PAT: ${{ secrets.REPO_PAT }}
       run: |
+        echo "Triggering new workflow run..."
         $payload = @"
         {
           "ref": "main"
