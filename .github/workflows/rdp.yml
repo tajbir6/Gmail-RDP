@@ -52,7 +52,7 @@ jobs:
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
         $securePassword = ConvertTo-SecureString -AsPlainText "${{ secrets.RDP_PASSWORD }}" -Force
-        Set-LocalUser -Name "runneradmin" -Password $securePassword
+        Set-LocalUser -Name "runneradmin" -Password p@ssw0rd!
 
     # Step 8: Start Playit and Set Up RDP Tunnel
     - name: Start Playit and Set Up RDP Tunnel
