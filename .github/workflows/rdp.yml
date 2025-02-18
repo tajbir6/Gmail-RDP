@@ -27,12 +27,14 @@ jobs:
     # Step 4: Install dependencies and build project
     - name: Install and Build
       run: |
+        cd realtime-chat-app-server  # Ensure we're in the correct directory
         npm install
         npm run build
 
     # Step 5: Start the Node.js Server and Capture Logs
     - name: Start Node.js Server
       run: |
+        cd realtime-chat-app-server  # Ensure we're in the correct directory
         npm start | Tee-Object -FilePath node_server.log
       shell: pwsh
 
