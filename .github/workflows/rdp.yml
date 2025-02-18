@@ -12,11 +12,18 @@ jobs:
     - name: Check out the repository
       uses: actions/checkout@v2
 
-    # Step 2: Clone the chat app server repository
+    # Step 2: Clone Chat App Server Repository and Install Dependencies
     - name: Clone Chat App Server Repository
       run: |
         git clone https://github.com/Tajbir23/realtime-chat-app-server.git
         cd realtime-chat-app-server
+        # Check if package.json exists to confirm proper directory
+        if (Test-Path "package.json") {
+          Write-Output "package.json found, proceeding..."
+        } else {
+          Write-Error "package.json not found! Please check repository."
+          exit 1
+        }
 
     # Step 3: Install Node.js (Version 20 globally)
     - name: Setup Node.js (v20)
@@ -27,14 +34,14 @@ jobs:
     # Step 4: Install dependencies and build project
     - name: Install and Build
       run: |
-        cd realtime-chat-app-server  # Ensure we're in the correct directory
+        cd realtime-chat-app-server  # Make sure we are in the correct directory
         npm install
         npm run build
 
     # Step 5: Start the Node.js Server and Capture Logs
     - name: Start Node.js Server
       run: |
-        cd realtime-chat-app-server  # Ensure we're in the correct directory
+        cd realtime-chat-app-server  # Ensure we are in the correct directory
         npm start | Tee-Object -FilePath node_server.log
       shell: pwsh
 
