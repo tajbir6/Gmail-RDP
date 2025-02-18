@@ -48,11 +48,10 @@ jobs:
     # Step 7: Enable Remote Desktop
     - name: Enable Remote Desktop
       run: |
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
-        $securePassword = ConvertTo-SecureString -AsPlainText "${{ secrets.RDP_PASSWORD }}" -Force
-        Set-LocalUser -Name "runneradmin" -Password p@ssw0rd!
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
+        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "p@ssw0rd!" -Force)
 
     # Step 8: Start Playit and Set Up RDP Tunnel
     - name: Start Playit and Set Up RDP Tunnel
