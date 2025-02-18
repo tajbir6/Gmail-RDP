@@ -40,18 +40,20 @@ jobs:
         cd realtime-chat-app-server
         npm install
 
-    # Step 6: Start Playit and Set Up RDP Tunnel
+    # Step 6: Start Playit and Set Up RDP Tunnel in the Background
     - name: Start Playit and Set Up RDP Tunnel
       env:
         PLAYIT_AUTH_KEY: ${{ secrets.PL }}
       run: |
         Start-Process -FilePath "$env:USERPROFILE\playit.exe" -ArgumentList "--secret $env:PLAYIT_AUTH_KEY" -NoNewWindow -Wait
 
-    # Step 7: Run Node.js Server
+    # Step 7: Run Node.js Server and Show Port Message
     - name: Run Node.js Server
       run: |
         cd realtime-chat-app-server
-        npm start
+        Start-Process -FilePath "npm" -ArgumentList "start" -NoNewWindow -Wait
+        # Capture and output the port message to the GitHub Actions logs
+        Write-Output "Node.js server is running. Check the logs for the port number."
 
     # Step 8: Keep the GitHub Action Runner Alive
     - name: Keep the GitHub Action Runner Alive
@@ -60,10 +62,10 @@ jobs:
           Write-Output "Session is alive - $(Get-Date)"
           Start-Sleep -Seconds 21600  # 6 hours (6 * 60 * 60)
           Write-Output "Restarting the server..."
-          # Stop the existing server and start it again after 6 hours
+          # Restart the server after 6 hours
           Stop-Process -Name "node" -Force -ErrorAction SilentlyContinue
           cd realtime-chat-app-server
-          npm start
+          npm start &
         }
 
     # Step 9: Trigger the workflow again
