@@ -33,10 +33,14 @@ jobs:
     - name: Start Node.js Server
       run: |
         cd realtime-chat-app-server
-        Start-Job -ScriptBlock { npm start } | Out-Null
-        Start-Sleep -Seconds 10
+        Start-Process -NoNewWindow -FilePath "powershell.exe" -ArgumentList "-Command Start-Job { npm start }"
+        Start-Sleep -Seconds 15
       shell: pwsh
 
+    # Step 5: Check if Node.js Server is Running
+    - name: Check if Node.js Server is Running
+      run: |
+        netstat -ano | findstr :3000
 
     # Step 6: Download and Install Playit
     - name: Download and Install Playit
@@ -67,6 +71,7 @@ jobs:
           Write-Output "Session is alive - $(Get-Date)"
           Start-Sleep -Seconds 300
         }
+      shell: pwsh
 
     # Step 10: Trigger New Workflow Run (Auto Restart)
     - name: Trigger New Workflow Run
