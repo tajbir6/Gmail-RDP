@@ -52,6 +52,8 @@ jobs:
     # Step 4: Start the Node.js Server and Capture Logs
     - name: Start Node.js Server
       run: |
+        # Ensure we are in the correct directory
+        cd realtime-chat-app-server
         npm start | Tee-Object -FilePath node_server.log
       shell: pwsh
 
