@@ -12,63 +12,62 @@ jobs:
     - name: Check out the repository
       uses: actions/checkout@v2
 
-    # Step 2: Download and install Playit
+    # Step 2: Install Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    # Step 3: Install dependencies and build project
+    - name: Install and Build
+      run: |
+        npm install
+        npm run build
+
+    # Step 4: Start the Node.js Server and Capture Logs
+    - name: Start Node.js Server
+      run: |
+        npm start | Tee-Object -FilePath node_server.log
+      shell: pwsh
+
+    # Step 5: Show Node.js Server Logs
+    - name: Display Node.js Server Logs
+      run: |
+        Get-Content node_server.log
+      shell: pwsh
+
+    # Step 6: Download and Install Playit
     - name: Download and Install Playit
       run: |
-        Invoke-WebRequest -Uri "https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.exe" -OutFile "$env:USERPROFILE\playit.exe"
+        $playitPath = "$env:USERPROFILE\playit.exe"
+        Invoke-WebRequest -Uri "https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.exe" -OutFile $playitPath
         Start-Sleep -Seconds 5
 
-    # Step 3: Enable Remote Desktop features and configure user
+    # Step 7: Enable Remote Desktop features and configure user
     - name: Enable Remote Desktop
       run: |
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "p@ssw0rd!" -Force)
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
+        $securePassword = ConvertTo-SecureString -AsPlainText "${{ secrets.RDP_PASSWORD }}" -Force
+        Set-LocalUser -Name "runneradmin" -Password $securePassword
 
-    # Step 4: Install Node.js version 20 globally
-    - name: Install Node.js version 20
-      run: |
-        Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.0.0/node-v20.0.0-x64.msi" -OutFile "$env:USERPROFILE\nodejs.msi"
-        Start-Process msiexec.exe -ArgumentList "/i", "$env:USERPROFILE\nodejs.msi", "/quiet", "/norestart" -NoNewWindow -Wait
-        node -v  # Verify installation
-
-    # Step 5: Clone Node.js Server and Install Dependencies
-    - name: Clone and Set Up Node.js Server
-      run: |
-        git clone https://github.com/Tajbir23/realtime-chat-app-server.git
-        cd realtime-chat-app-server
-        npm install
-
-    # Step 6: Start Playit and Set Up RDP Tunnel in the Background
+    # Step 8: Start Playit and Set Up RDP Tunnel
     - name: Start Playit and Set Up RDP Tunnel
       env:
         PLAYIT_AUTH_KEY: ${{ secrets.PL }}
       run: |
         Start-Process -FilePath "$env:USERPROFILE\playit.exe" -ArgumentList "--secret $env:PLAYIT_AUTH_KEY" -NoNewWindow -Wait
 
-    # Step 7: Run Node.js Server and Show Port Message
-    - name: Run Node.js Server
-      run: |
-        cd realtime-chat-app-server
-        Start-Process -FilePath "npm" -ArgumentList "start" -NoNewWindow -Wait
-        # Capture and output the port message to the GitHub Actions logs
-        Write-Output "Node.js server is running. Check the logs for the port number."
-
-    # Step 8: Keep the GitHub Action Runner Alive
+    # Step 9: Keep the GitHub Action Runner Alive
     - name: Keep the GitHub Action Runner Alive
       run: |
         while ($true) {
           Write-Output "Session is alive - $(Get-Date)"
-          Start-Sleep -Seconds 21600  # 6 hours (6 * 60 * 60)
-          Write-Output "Restarting the server..."
-          # Restart the server after 6 hours
-          Stop-Process -Name "node" -Force -ErrorAction SilentlyContinue
-          cd realtime-chat-app-server
-          npm start &
+          Start-Sleep -Seconds 300
         }
 
-    # Step 9: Trigger the workflow again
+    # Step 10: Trigger New Workflow Run (Auto Restart)
     - name: Trigger New Workflow Run
       if: always()
       env:
