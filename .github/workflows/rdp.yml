@@ -15,51 +15,32 @@ jobs:
     # Step 2: Install Node.js globally
     - name: Install Node.js globally
       run: |
-        # Download Node.js installer
         Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.18.2/node-v20.18.2-x64.msi" -OutFile "nodejs_installer.msi"
-        
-        # Install Node.js
         Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", "nodejs_installer.msi", "/quiet", "/norestart" -Wait
-        
-        # Clean up the installer
         Remove-Item "nodejs_installer.msi"
-
-        # Confirm the installation
         node --version
         npm --version
 
     # Step 3: Clone the repository and install dependencies
     - name: Clone the repository and install dependencies
       run: |
-        echo "Cloning the repository..."
         git clone https://github.com/Tajbir23/realtime-chat-app-server.git
         cd realtime-chat-app-server
-        
-        # List the directory contents to verify the structure
-        echo "Listing the directory contents:"
-        dir
-        
-        # Check if package.json exists in the directory
-        if (Test-Path "package.json") {
-          echo "Found package.json, installing dependencies..."
-          npm install
-          npm run build
-        } else {
-          echo "package.json not found in the repository. Exiting!"
-          exit 1
-        }
+        npm install
+        npm run build
 
-    # Step 4: Start the Node.js Server and Capture Logs
+    # Step 4: Start the Node.js Server in Background
     - name: Start Node.js Server
       run: |
-        # Ensure we are in the correct directory
         cd realtime-chat-app-server
-        npm start | Tee-Object -FilePath node_server.log
+        Start-Job -ScriptBlock { npm start } | Out-Null
+        Start-Sleep -Seconds 10
       shell: pwsh
 
     # Step 5: Display Node.js Server Logs
     - name: Display Node.js Server Logs
       run: |
+        cd realtime-chat-app-server
         Get-Content node_server.log
       shell: pwsh
 
@@ -70,7 +51,7 @@ jobs:
         Invoke-WebRequest -Uri "https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.exe" -OutFile $playitPath
         Start-Sleep -Seconds 5
 
-    # Step 7: Enable Remote Desktop features and configure user
+    # Step 7: Enable Remote Desktop
     - name: Enable Remote Desktop
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
@@ -108,7 +89,7 @@ jobs:
 
         Invoke-RestMethod `
           -Method POST `
-          -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/rdp.yml/dispatches" `
+          -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/Gmail-RDP.yml/dispatches" `
           -Headers @{
             Authorization = "token $env:REPO_PAT"
             Accept = "application/vnd.github.v3+json"
