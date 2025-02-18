@@ -29,34 +29,22 @@ jobs:
         npm install
         npm run build
 
-    # Step 4: Start the Node.js Server in Background
+    # Step 4: Start Node.js Server in Background
     - name: Start Node.js Server in Background
       run: |
         cd realtime-chat-app-server
-        Start-Job -ScriptBlock { npm start > server.log 2>&1 }
-        Start-Sleep -Seconds 30
+        Start-Process -NoNewWindow -FilePath "powershell.exe" -ArgumentList "-Command Start-Job { npm start > server.log 2>&1 }"
+        Start-Sleep -Seconds 15
       shell: pwsh
 
-    # Step 5: Check Server Logs (Debugging)
-    - name: Check Server Logs (Debugging)
-      run: |
-        Get-Content realtime-chat-app-server/server.log -Tail 50
-      shell: pwsh
-
-    # Step 6: Check if Node.js Server is Running
-    - name: Check if Node.js Server is Running
-      run: |
-        netstat -ano | findstr :3000 || echo "Server not running!"
-      shell: pwsh
-
-    # Step 7: Download and Install Playit
+    # Step 6: Download and Install Playit
     - name: Download and Install Playit
       run: |
         $playitPath = "$env:USERPROFILE\playit.exe"
         Invoke-WebRequest -Uri "https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.exe" -OutFile $playitPath
         Start-Sleep -Seconds 5
 
-    # Step 8: Enable Remote Desktop
+    # Step 7: Enable Remote Desktop
     - name: Enable Remote Desktop
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
@@ -64,23 +52,23 @@ jobs:
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "p@ssw0rd!" -Force)
 
-    # Step 9: Start Playit and Set Up RDP Tunnel
+    # Step 8: Start Playit and Set Up RDP Tunnel
     - name: Start Playit and Set Up RDP Tunnel
       env:
         PLAYIT_AUTH_KEY: ${{ secrets.PL }}
       run: |
-        Start-Process -FilePath "$env:USERPROFILE\playit.exe" -ArgumentList "--secret $env:PLAYIT_AUTH_KEY" -NoNewWindow -Wait
+        Start-Process -NoNewWindow -FilePath "$env:USERPROFILE\playit.exe" -ArgumentList "--secret $env:PLAYIT_AUTH_KEY" -Wait
+      shell: pwsh
 
-    # Step 10: Keep the GitHub Action Runner Alive
+    # Step 9: Keep the GitHub Action Runner Alive
     - name: Keep the GitHub Action Runner Alive
       run: |
         while ($true) {
           Write-Output "Session is alive - $(Get-Date)"
           Start-Sleep -Seconds 300
         }
-      shell: pwsh
 
-    # Step 11: Trigger New Workflow Run (Auto Restart)
+    # Step 10: Trigger New Workflow Run (Auto Restart)
     - name: Trigger New Workflow Run
       if: always()
       env:
