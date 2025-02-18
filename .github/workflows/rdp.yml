@@ -37,6 +37,14 @@ jobs:
         Start-Sleep -Seconds 15
       shell: pwsh
 
+    # Step 5: Check if Node.js Server is Running
+    - name: Check if Node.js Server is Running
+      run: |
+        netstat -ano | findstr :3000 || echo "Node.js server is not running!"
+        # Alternatively, use Test-NetConnection for more detailed check
+        Test-NetConnection -ComputerName "localhost" -Port 3000
+      shell: pwsh
+
     # Step 6: Download and Install Playit
     - name: Download and Install Playit
       run: |
