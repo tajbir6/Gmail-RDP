@@ -2,17 +2,17 @@ name: Gmail-RDP
 
 on:
   workflow_dispatch:
-  repository_dispatch:
-    types: [chat-app-updated]
 
 jobs:
   setup-rdp-tunnel:
     runs-on: windows-latest
 
     steps:
+    # Step 1: Check out the repository
     - name: Check out the repository
       uses: actions/checkout@v2
 
+    # Step 2: Install Node.js globally
     - name: Install Node.js globally
       run: |
         Invoke-WebRequest -Uri "https://nodejs.org/dist/v20.18.2/node-v20.18.2-x64.msi" -OutFile "nodejs_installer.msi"
@@ -21,18 +21,27 @@ jobs:
         node --version
         npm --version
 
+    # Step 3: Clone the repository and install dependencies
     - name: Clone the repository and install dependencies
       run: |
         git clone https://github.com/Tajbir23/realtime-chat-app-server.git
         cd realtime-chat-app-server
         npm install
+    # npm run build
 
+    # Step 4: Start Node.js Server in New PowerShell Window
+    - name: Start Node.js Server in New PowerShell Window
+      run: |
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
+    
+    # Step 5: Download and Install Playit
     - name: Download and Install Playit
       run: |
         $playitPath = "$env:USERPROFILE\playit.exe"
         Invoke-WebRequest -Uri "https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.exe" -OutFile $playitPath
         Start-Sleep -Seconds 5
 
+   # Step 6: Enable Remote Desktop features and configure user
     - name: Enable Remote Desktop
       run: |
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
@@ -40,29 +49,43 @@ jobs:
         Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "p@ssw0rd!" -Force)
 
-    - name: Start Playit in a New PowerShell Window
+    # Step 7: Start Playit and Set Up RDP Tunnel
+    - name: Start Playit and Set Up RDP Tunnel
       env:
         PLAYIT_AUTH_KEY: ${{ secrets.PL }}
       run: |
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "$env:USERPROFILE\playit.exe --secret $env:PLAYIT_AUTH_KEY"
 
+    # Step 8: Start Node.js Server in New PowerShell Window
     - name: Start Node.js Server in New PowerShell Window
       run: |
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start" -NoNewWindow -Wait
 
-    - name: Trigger New Workflow Run in Chat App Repository
+    # Step 9: Keep the GitHub Action Runner Alive
+    - name: Keep the GitHub Action Runner Alive
+      run: |
+        while ($true) {
+          Write-Output "Session is alive - $(Get-Date)"
+          Start-Sleep -Seconds 300
+        }
+
+    # Step 10: Trigger New Workflow Run (Auto Restart)
+    - name: Trigger New Workflow Run
       if: always()
       env:
-        CHAT_APP_REPO_PAT: ${{ secrets.CHAT_APP_REPO_PAT }}
         REPO_PAT: ${{ secrets.REPO_PAT }}
       run: |
-        $payload = '{ "event_type": "chat-app-updated", "client_payload": { "ref": "main" } }'
+        $payload = @"
+        {
+          "ref": "main"
+        }
+        "@
 
         Invoke-RestMethod `
           -Method POST `
-          -Uri "https://api.github.com/repos/Tajbir23/realtime-chat-app-server/dispatches" `
+          -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/rdp.yml/dispatches" `
           -Headers @{
-            Authorization = "token $env:CHAT_APP_REPO_PAT"
+            Authorization = "token $env:REPO_PAT"
             Accept = "application/vnd.github.v3+json"
           } `
           -Body $payload
