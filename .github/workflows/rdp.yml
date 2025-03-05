@@ -48,7 +48,7 @@ jobs:
 
     - name: Start Node.js Server in New PowerShell Window
       run: |
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"  -NoNewWindow -Wait
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
 
     - name: Trigger New Workflow Run in Chat App Repository
       if: always()
