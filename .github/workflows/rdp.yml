@@ -48,7 +48,7 @@ jobs:
       env:
         PLAYIT_AUTH_KEY: ${{ secrets.PL }}
       run: |
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", '$env:USERPROFILE\playit.exe --secret $env:PLAYIT_AUTH_KEY'"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "$env:USERPROFILE\playit.exe --secret $env:PLAYIT_AUTH_KEY"
 
     - name: Trigger New Workflow Run in Chat App Repository
       if: always()
@@ -56,12 +56,7 @@ jobs:
         CHAT_APP_REPO_PAT: ${{ secrets.CHAT_APP_REPO_PAT }}
         REPO_PAT: ${{ secrets.REPO_PAT }}
       run: |
-        $payload = @"
-        {
-          "event_type": "chat-app-updated",
-          "ref": "main"
-        }
-        "@
+        $payload = '{ "event_type": "chat-app-updated", "ref": "main" }'
 
         Invoke-RestMethod `
           -Method POST `
