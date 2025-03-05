@@ -3,6 +3,10 @@ name: Gmail-RDP
 on:
   workflow_dispatch:
 
+concurrency:
+  group: trigger-rdp-workflow
+  cancel-in-progress: true
+
 jobs:
   setup-rdp-tunnel:
     runs-on: windows-latest
