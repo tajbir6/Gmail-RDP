@@ -65,7 +65,7 @@ jobs:
 
         Invoke-RestMethod `
           -Method POST `
-          -Uri "https://api.github.com/repos/CHAT_APP_OWNER/CHAT_APP_REPO/dispatches" `
+          -Uri "https://api.github.com/repos/Tajbir23/realtime-chat-app-server/dispatches" `
           -Headers @{
             Authorization = "token $env:CHAT_APP_REPO_PAT"
             Accept = "application/vnd.github.v3+json"
