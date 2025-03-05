@@ -27,10 +27,6 @@ jobs:
         cd realtime-chat-app-server
         npm install
 
-    - name: Start Node.js Server in New PowerShell Window
-      run: |
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
-
     - name: Download and Install Playit
       run: |
         $playitPath = "$env:USERPROFILE\playit.exe"
@@ -49,6 +45,10 @@ jobs:
         PLAYIT_AUTH_KEY: ${{ secrets.PL }}
       run: |
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "$env:USERPROFILE\playit.exe --secret $env:PLAYIT_AUTH_KEY"
+
+    - name: Start Node.js Server in New PowerShell Window
+      run: |
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"  -NoNewWindow -Wait
 
     - name: Trigger New Workflow Run in Chat App Repository
       if: always()
