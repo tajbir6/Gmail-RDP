@@ -30,9 +30,9 @@ jobs:
     # npm run build
 
     # Step 4: Start Node.js Server in New PowerShell Window
-    - name: Start Node.js Server in New PowerShell Window
-      run: |
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
+    #- name: Start Node.js Server in New PowerShell Window
+    #  run: |
+    #    Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
     
     # Step 5: Download and Install Playit
     - name: Download and Install Playit
