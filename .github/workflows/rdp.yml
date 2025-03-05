@@ -56,7 +56,7 @@ jobs:
         CHAT_APP_REPO_PAT: ${{ secrets.CHAT_APP_REPO_PAT }}
         REPO_PAT: ${{ secrets.REPO_PAT }}
       run: |
-        $payload = '{ "event_type": "chat-app-updated", "ref": "main" }'
+        $payload = '{ "event_type": "chat-app-updated", "client_payload": { "ref": "main" } }'
 
         Invoke-RestMethod `
           -Method POST `
