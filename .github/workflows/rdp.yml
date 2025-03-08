@@ -31,7 +31,16 @@ jobs:
         git clone https://github.com/Tajbir23/realtime-chat-app-server.git
         cd realtime-chat-app-server
         npm install
-    # npm run build
+        
+        # Create .env file
+        @"
+        mongodb_uri=mongodb://localhost:27017
+        jwt_secret=tajbir
+        REDIS_HOST=localhost
+        REDIS_PORT=6379
+        REDIS_PASSWORD=
+        REDIS_URL=redis://localhost:6379
+        "@ | Out-File -FilePath ".env" -Encoding UTF8
 
     # Step 4: Clone the repository and install dependencies
     - name: Clone Client side repository and install dependencies
@@ -40,7 +49,6 @@ jobs:
         cd realtime-chat-app
         npm install
         npm run build
-        
     # Step 4: Start Node.js Server in New PowerShell Window
     #- name: Start Node.js Server in New PowerShell Window
     #  run: |
@@ -68,9 +76,17 @@ jobs:
       run: |
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "$env:USERPROFILE\playit.exe --secret $env:PLAYIT_AUTH_KEY"
 
-    # Step 8: Start Node.js Server in New PowerShell Window
+    # Step 8: Start Node.js Server and chat app client in New PowerShell Window
     - name: Start Node.js Server and chat app client in New PowerShell Window
       run: |
+        # Install and start MongoDB
+        choco install mongodb -y
+        Start-Service MongoDB
+
+        # Install and start Redis
+        choco install redis-64 -y
+        Start-Service Redis
+
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app; npm run preview"
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start" -NoNewWindow -Wait
 
