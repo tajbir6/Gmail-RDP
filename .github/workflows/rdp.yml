@@ -46,6 +46,20 @@ jobs:
         cd realtime-chat-app
         npm install
 
+        # Fetch the public IP address of the RDP machine using a different service
+        $publicIp = Invoke-RestMethod -Uri "http://checkip.amazonaws.com"
+
+        # Trim any whitespace from the IP address
+        $publicIp = $publicIp.Trim()
+
+        # Check if the public IP was retrieved
+        if (-not $publicIp) {
+          Write-Error "Failed to retrieve public IP address"
+          exit 1
+        }
+
+        # Output the public IP for debugging
+        Write-Output "Public IP: $publicIp"
 
         # Create .env file with the public IP address
         @"
