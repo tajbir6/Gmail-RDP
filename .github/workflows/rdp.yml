@@ -37,8 +37,6 @@ jobs:
         mongodb_uri=${{ secrets.MONGODB_URI }}
         jwt_secret=${{ secrets.JWT_SECRET }}
         REDIS_URL=${{ secrets.REDIS_URI }}
-        VITE_API = ${{ secrets.VITE_API }}
-        VITE_CLOUDINARY_CLOUDNAME=${{ secrets.VITE_CLOUDINARY_CLOUDNAME }}
         "@ | Out-File -FilePath ".env" -Encoding UTF8
 
     # Step 4: Clone the repository and install dependencies
@@ -47,13 +45,15 @@ jobs:
         git clone https://github.com/Tajbir23/realtime-chat-app.git
         cd realtime-chat-app
         npm install
-        npm run build
 
         # Create .env file
         @"
         VITE_API=${{ secrets.VITE_API }}
         VITE_CLOUDINARY_CLOUDNAME=${{ secrets.VITE_CLOUDINARY_CLOUDNAME }}
         "@ | Out-File -FilePath ".env" -Encoding UTF8
+        
+        npm run build
+
     # Step 4: Start Node.js Server in New PowerShell Window
     #- name: Start Node.js Server in New PowerShell Window
     #  run: |
