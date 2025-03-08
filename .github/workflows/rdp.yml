@@ -62,6 +62,7 @@ jobs:
         @"
         VITE_API=http://$publicIp:3000
         VITE_CLOUDINARY_CLOUDNAME=${{ secrets.VITE_CLOUDINARY_CLOUDNAME }}
+        VITE_CLOUDINARY_UPLOAD_PRESET=${{ secrets.VITE_CLOUDINARY_UPLOAD_PRESET }}
         "@ | Out-File -FilePath ".env" -Encoding UTF8
         
         npm run build
