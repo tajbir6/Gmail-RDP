@@ -67,9 +67,9 @@ jobs:
 
         # Create .env file with the tunnel URL
         @"
-VITE_API=$tunnelUrl
-VITE_CLOUDINARY_CLOUDNAME=${{ secrets.VITE_CLOUDINARY_CLOUDNAME }}
-"@ | Out-File -FilePath ".env" -Encoding UTF8
+        VITE_API=$tunnelUrl
+        VITE_CLOUDINARY_CLOUDNAME=${{ secrets.VITE_CLOUDINARY_CLOUDNAME }}
+        "@ | Out-File -FilePath ".env" -Encoding UTF8
         
         npm run build
 
