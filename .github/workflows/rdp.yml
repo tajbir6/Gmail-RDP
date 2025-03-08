@@ -32,14 +32,11 @@ jobs:
         cd realtime-chat-app-server
         npm install
         
-        # Create .env file with MongoDB Atlas connection
+        # Create .env file with MongoDB Atlas and Upstash Redis
         @"
         mongodb_uri=mongodb+srv://realtimeChat:realtimeChat@cluster0.sdyx3bs.mongodb.net/realtimeChat?retryWrites=true&w=majority&appName=Cluster0
         jwt_secret=tajbir
-        REDIS_HOST=localhost
-        REDIS_PORT=6379
-        REDIS_PASSWORD=
-        REDIS_URL=redis://localhost:6379
+        REDIS_URL=rediss://default:c888c18b9196408ca19118f43492bd88@gusc1-stirring-hermit-31054.upstash.io:31054
         "@ | Out-File -FilePath ".env" -Encoding UTF8
 
     # Step 4: Clone the repository and install dependencies
@@ -79,15 +76,6 @@ jobs:
     # Step 8: Start Node.js Server and chat app client in New PowerShell Window
     - name: Start Node.js Server and chat app client in New PowerShell Window
       run: |
-        # Install Redis and start Memurai service
-        choco install redis-64 -y
-        Start-Service Memurai-Developer
-        
-        # Update .env to use correct Redis connection
-        $env_content = Get-Content .env
-        $env_content = $env_content -replace "REDIS_URL=redis://localhost:6379", "REDIS_URL=redis://127.0.0.1:6379"
-        $env_content | Set-Content .env
-
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app; npm run preview"
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start" -NoNewWindow -Wait
 
