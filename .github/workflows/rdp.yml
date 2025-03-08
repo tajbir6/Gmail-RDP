@@ -39,6 +39,8 @@ jobs:
         git clone https://github.com/Tajbir23/realtime-chat-app.git
         cd realtime-chat-app
         npm install
+        npm run build
+        
     # Step 4: Start Node.js Server in New PowerShell Window
     #- name: Start Node.js Server in New PowerShell Window
     #  run: |
