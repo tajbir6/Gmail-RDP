@@ -39,40 +39,28 @@ jobs:
         REDIS_URL=${{ secrets.REDIS_URI }}
         "@ | Out-File -FilePath ".env" -Encoding UTF8
 
-    # Step 4: Start Playit and Capture Tunnel URL
-    - name: Start Playit and Capture Tunnel URL
-      env:
-        PLAYIT_AUTH_KEY: ${{ secrets.PL }}
+    # Step 4: Clone the repository and install dependencies
+    - name: Clone Client side repository and install dependencies
       run: |
-        # Start Playit and capture the output
-        $playitOutput = & "$env:USERPROFILE\playit.exe" --secret $env:PLAYIT_AUTH_KEY
-        Start-Sleep -Seconds 10  # Wait for Playit to initialize
-
-        # Extract the tunnel URL from the output
-        $tunnelUrl = $playitOutput | Select-String -Pattern "https://.*" | ForEach-Object { $_.Matches[0].Value }
-
-        # Check if the tunnel URL was found
-        if (-not $tunnelUrl) {
-          Write-Error "Tunnel URL not found in Playit output"
-          exit 1
-        }
-
-        # Output the tunnel URL for debugging
-        Write-Output "Tunnel URL: $tunnelUrl"
-
-        # Clone Client side repository and install dependencies
         git clone https://github.com/Tajbir23/realtime-chat-app.git
         cd realtime-chat-app
         npm install
 
-        # Create .env file with the tunnel URL
+
+        # Create .env file with the public IP address
         @"
-        VITE_API=$tunnelUrl
+        VITE_API=http://transfer-active.gl.at.ply.gg:42988
         VITE_CLOUDINARY_CLOUDNAME=${{ secrets.VITE_CLOUDINARY_CLOUDNAME }}
+        VITE_CLOUDINARY_UPLOAD_PRESET=${{ secrets.VITE_CLOUDINARY_UPLOAD_PRESET }}
         "@ | Out-File -FilePath ".env" -Encoding UTF8
         
         npm run build
 
+    # Step 4: Start Node.js Server in New PowerShell Window
+    #- name: Start Node.js Server in New PowerShell Window
+    #  run: |
+    #    Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
+    
     # Step 5: Download and Install Playit
     - name: Download and Install Playit
       run: |
