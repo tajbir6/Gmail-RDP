@@ -32,9 +32,9 @@ jobs:
         cd realtime-chat-app-server
         npm install
         
-        # Create .env file
+        # Create .env file with MongoDB Atlas connection
         @"
-        mongodb_uri=mongodb://localhost:27017
+        mongodb_uri=mongodb+srv://realtimeChat:realtimeChat@cluster0.sdyx3bs.mongodb.net/realtimeChat?retryWrites=true&w=majority&appName=Cluster0
         jwt_secret=tajbir
         REDIS_HOST=localhost
         REDIS_PORT=6379
@@ -79,11 +79,7 @@ jobs:
     # Step 8: Start Node.js Server and chat app client in New PowerShell Window
     - name: Start Node.js Server and chat app client in New PowerShell Window
       run: |
-        # Install and start MongoDB
-        choco install mongodb -y
-        Start-Service MongoDB
-
-        # Install and start Redis
+        # Install Redis only (skip MongoDB as we're using Atlas)
         choco install redis-64 -y
         Start-Service Redis
 
