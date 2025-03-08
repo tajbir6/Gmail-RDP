@@ -9,7 +9,7 @@ concurrency:
 
 jobs:
   setup-rdp-tunnel:
-    runs-on: linux-latest
+    runs-on: ubuntu-latest
 
     steps:
     # Step 1: Check out the repository
