@@ -63,12 +63,13 @@ jobs:
 
         # Verify the public IP is being set correctly
         if ($publicIp -ne "") {
-          Write-Output "Setting VITE_API to http://$publicIp:3000"
+          $viteApiUrl = "http://$publicIp:3000"
+          Write-Output "Setting VITE_API to $viteApiUrl"
         } else {
           Write-Error "Public IP is empty, cannot set VITE_API"
           exit 1
         }
-          
+
         # Create .env file with the public IP address
         @"
         VITE_API=http://$publicIp:3000
