@@ -46,9 +46,21 @@ jobs:
         cd realtime-chat-app
         npm install
 
-        # Create .env file
+        # Fetch the public IP address of the RDP machine
+        $publicIp = Invoke-RestMethod -Uri "https://ifconfig.me"
+
+        # Check if the public IP was retrieved
+        if (-not $publicIp) {
+          Write-Error "Failed to retrieve public IP address"
+          exit 1
+        }
+
+        # Output the public IP for debugging
+        Write-Output "Public IP: $publicIp"
+
+        # Create .env file with the public IP address
         @"
-        VITE_API=${{ secrets.VITE_API }}
+        VITE_API=http://$publicIp:3000
         VITE_CLOUDINARY_CLOUDNAME=${{ secrets.VITE_CLOUDINARY_CLOUDNAME }}
         "@ | Out-File -FilePath ".env" -Encoding UTF8
         
