@@ -36,7 +36,6 @@ jobs:
     # Step 4: Clone the repository and install dependencies
     - name: Clone Client side repository and install dependencies
       run: |
-        cd ..
         git clone https://github.com/Tajbir23/realtime-chat-app.git
         cd realtime-chat-app
         npm install
