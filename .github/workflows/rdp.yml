@@ -96,12 +96,12 @@ jobs:
 
     - name: Clone whatsapp auto proxy send repository
       run: |
-        git clone https://${GITHUB_PAT}@github.com/Tajbir23/auto-proxy-send.git
+        echo "Cloning private repository..."
+        git clone "https://$env:GITHUB_PAT@github.com/Tajbir23/auto-proxy-send.git"
         cd auto-proxy-send
         npm install
       env:
         GITHUB_PAT: ${{ secrets.WAUPS }}
-    
 
     # Step 4: Start Node.js Server in New PowerShell Window
     #- name: Start Node.js Server in New PowerShell Window
