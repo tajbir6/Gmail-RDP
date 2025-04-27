@@ -168,11 +168,11 @@ jobs:
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-client; npm run preview"
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-server; nodemon index.js"
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
-        
-        # Start auto-proxy-send in a window with focus
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd auto-proxy-send; npm run dev" -WindowStyle Normal
-        
-        # Keep the workflow alive here
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd auto-proxy-send; npm run dev" -NoNewWindow -Wait
+
+    # Step 9: Keep the GitHub Action Runner Alive
+    - name: Keep the GitHub Action Runner Alive
+      run: |
         while ($true) {
           Write-Output "Session is alive - $(Get-Date)"
           Start-Sleep -Seconds 300
