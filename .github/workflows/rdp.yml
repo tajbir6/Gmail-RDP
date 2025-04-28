@@ -142,7 +142,7 @@ jobs:
         # Create a PowerShell script file for the background job
         $scriptPath = "$(Get-Location)\git-push-script.ps1"
         @"
-        `$env:GITHUB_PAT = '$env:GITHUB_PAT'
+        `$env:GITHUB_PAT = '$($env:GITHUB_PAT)'
         while (`$true) {
           Write-Output "Checking for changes to push - `$(Get-Date)"
           cd "$(Get-Location)"
