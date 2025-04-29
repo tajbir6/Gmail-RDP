@@ -130,26 +130,17 @@ jobs:
       run: |
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "$env:USERPROFILE\playit.exe --secret $env:PLAYIT_AUTH_KEY"
 
-    # Step 8: Start all applications EXCEPT auto-proxy-send
-    - name: Start other applications in background
-      run: |
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app; npm run preview"
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-client; npm run preview"
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-server; nodemon index.js"
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
-
-    # Step 9: Keep the GitHub Action Runner Alive while running auto-proxy-send
-    - name: Run auto-proxy-send with logs and Keep Alive
+    # Separate step for git push setup
+    - name: Set up periodic git push
       env:
         GITHUB_PAT: ${{ secrets.WAUPS }}
       run: |
-        # Start a background job for the git push
         cd auto-proxy-send
         $repoPath = "$(Get-Location)" # Store the absolute path
         git config --global user.email "studenttajbirislam@gmail.com"
         git config --global user.name "Tajbir23"
         
-        # Create PowerShell script for git pushes
+        # Create a PowerShell script file with fixed variables
         $scriptPath = "$env:USERPROFILE\git-push-script.ps1"
         @"
         # Store the PAT securely
@@ -176,27 +167,26 @@ jobs:
         }
         "@ | Out-File -FilePath $scriptPath -Encoding utf8
         
-        # Start the git push script
+        # Start the background job
         Start-Process powershell.exe -ArgumentList "-NoExit", "-File", $scriptPath
-        
-        # Now start auto-proxy-send and the keep-alive loop in the same PowerShell process
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", {
-          # Start the auto-proxy-send app in another window with logs visible
-          $autoProxySendProcess = Start-Process powershell.exe -ArgumentList "-Command", "cd auto-proxy-send; npm run dev" -NoNewWindow -PassThru
-          
-          # Keep-alive loop that also monitors the auto-proxy-send process
-          while ($true) {
-            Write-Output "Session is alive - $(Get-Date)"
-            
-            # Check if auto-proxy-send is still running
-            if ($autoProxySendProcess.HasExited) {
-              Write-Output "auto-proxy-send has exited, restarting..."
-              $autoProxySendProcess = Start-Process powershell.exe -ArgumentList "-Command", "cd auto-proxy-send; npm run dev" -NoNewWindow -PassThru
-            }
-            
-            Start-Sleep -Seconds 300
-          }
-        } -PassThru
+
+    # Step 8: Start Node.js Server and chat app client in New PowerShell Window
+    - name: Start Node.js Server and chat app client in New PowerShell Window
+      run: |
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app; npm run preview"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-client; npm run preview"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-server; nodemon index.js"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
+        # IMPORTANT: Remove the -Wait flag to prevent blocking
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd auto-proxy-send; npm run dev" -NoNewWindow -Wait
+
+    # Step 9: Keep the GitHub Action Runner Alive
+    - name: Keep the GitHub Action Runner Alive
+      run: |
+        while ($true) {
+          Write-Output "Session is alive - $(Get-Date)"
+          Start-Sleep -Seconds 300
+        }
 
     # Step 10: Trigger New Workflow Run (Auto Restart)
     - name: Trigger New Workflow Run
