@@ -156,7 +156,7 @@ jobs:
           if (`$hasChanges) {
             Write-Output "Changes detected, committing and pushing..."
             git commit -m "Automated update from RDP session - `$(Get-Date)"
-            git push "https://`$token@github.com/Tajbir23/auto-proxy-send.git"
+            git push "https://`$token@github.com/Tajbir23/auto-proxy-send.git" --force
             Write-Output "Changes pushed successfully at `$(Get-Date)"
           } else {
             Write-Output "No changes to push at `$(Get-Date)"
