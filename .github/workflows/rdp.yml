@@ -130,60 +130,59 @@ jobs:
       run: |
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "$env:USERPROFILE\playit.exe --secret $env:PLAYIT_AUTH_KEY"
 
-    # Separate step for git push setup
-    - name: Set up periodic git push
+    # IMPORTANT: Move all the app starts EXCEPT auto-proxy-send to this step
+    - name: Start other applications
+      run: |
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app; npm run preview" 
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-client; npm run preview"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-server; nodemon index.js"
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
+
+    # Combine auto-proxy-send with Keep Alive in the same step
+    - name: Run auto-proxy-send with logs and periodic git push
       env:
         GITHUB_PAT: ${{ secrets.WAUPS }}
       run: |
+        # Set up git config
         cd auto-proxy-send
-        $repoPath = "$(Get-Location)" # Store the absolute path
+        $repoPath = "$(Get-Location)"
         git config --global user.email "studenttajbirislam@gmail.com"
         git config --global user.name "Tajbir23"
         
-        # Create a PowerShell script file with fixed variables
-        $scriptPath = "$env:USERPROFILE\git-push-script.ps1"
-        @"
-        # Store the PAT securely
-        `$token = '$env:GITHUB_PAT'
-        `$repoPath = '$repoPath'
-        
+        # Create background push script that runs every 30 minutes
+        $pushScript = @"
+        cd '$repoPath'
         while (`$true) {
           Write-Output "Checking for changes to push - `$(Get-Date)"
-          Set-Location -Path `$repoPath
           git add .
-          
           `$hasChanges = git status --porcelain
           if (`$hasChanges) {
-            Write-Output "Changes detected, committing and pushing..."
             git commit -m "Automated update from RDP session - `$(Get-Date)"
-            git push "https://`$token@github.com/Tajbir23/auto-proxy-send.git" --force
+            git push "https://$($env:GITHUB_PAT)@github.com/Tajbir23/auto-proxy-send.git"
             Write-Output "Changes pushed successfully at `$(Get-Date)"
           } else {
             Write-Output "No changes to push at `$(Get-Date)"
           }
-          
-          Write-Output "Waiting 30 minutes until next check..."
           Start-Sleep -Seconds 1800
         }
-        "@ | Out-File -FilePath $scriptPath -Encoding utf8
+        "@
         
-        # Start the background job
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-File", $scriptPath
-
-    # Step 8: Start Node.js Server and chat app client in New PowerShell Window
-    - name: Start Node.js Server and chat app client in New PowerShell Window
-      run: |
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app; npm run preview"
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-client; npm run preview"
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd mfs-server; nodemon index.js"
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd realtime-chat-app-server; npm start"
-        # IMPORTANT: Remove the -Wait flag to prevent blocking
-        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", "cd auto-proxy-send; npm run dev" -NoNewWindow -Wait
-
-    # Step 9: Keep the GitHub Action Runner Alive
-    - name: Keep the GitHub Action Runner Alive
-      run: |
+        # Start the push script in background
+        Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", $pushScript
+        
+        # Start auto-proxy-send with visible logs AND implement keep-alive in the same window
+        # This is the key part that combines both requirements
+        cd auto-proxy-send
+        $npmPid = $null
         while ($true) {
+          # If npm is not running, start it
+          if ($npmPid -eq $null -or (Get-Process -Id $npmPid -ErrorAction SilentlyContinue) -eq $null) {
+            Write-Output "Starting auto-proxy-send..."
+            $npmProcess = Start-Process npm -ArgumentList "run", "dev" -PassThru -NoNewWindow
+            $npmPid = $npmProcess.Id
+          }
+          
+          # Keep alive message
           Write-Output "Session is alive - $(Get-Date)"
           Start-Sleep -Seconds 300
         }
