@@ -171,8 +171,6 @@ jobs:
         Start-Process powershell.exe -ArgumentList "-NoExit", "-Command", $pushScript
         
         # Start auto-proxy-send with visible logs AND implement keep-alive in the same window
-        # This is the key part that combines both requirements
-        cd auto-proxy-send
         $npmPid = $null
         while ($true) {
           # If npm is not running, start it
