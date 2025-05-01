@@ -152,9 +152,17 @@ jobs:
         # Create background push script that runs every 30 minutes
         $pushScript = @"
         cd '$repoPath'
+        # Remove tokens folder from .gitignore if it exists
+        if (Test-Path ".gitignore") {
+          `$gitignore = Get-Content ".gitignore" -Raw
+          `$gitignore = `$gitignore -replace "tokens/", ""
+          `$gitignore | Set-Content ".gitignore" -NoNewline
+        }
         while (`$true) {
           Write-Output "Checking for changes to push - `$(Get-Date)"
           git add .
+          # Force add the tokens folder even if it's in parent .gitignore files
+          git add -f tokens/
           `$hasChanges = git status --porcelain
           if (`$hasChanges) {
             git commit -m "Automated update from RDP session - `$(Get-Date)"
