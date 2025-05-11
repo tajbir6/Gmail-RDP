@@ -184,7 +184,7 @@ jobs:
           # If npm is not running, start it
           if ($npmPid -eq $null -or (Get-Process -Id $npmPid -ErrorAction SilentlyContinue) -eq $null) {
             Write-Output "Starting auto-proxy-send..."
-            $npmProcess = Start-Process npm -ArgumentList "run", "dev" -PassThru -NoNewWindow
+            $npmProcess = Start-Process npm -ArgumentList "run", "dev" -PassThru
             $npmPid = $npmProcess.Id
           }
           
